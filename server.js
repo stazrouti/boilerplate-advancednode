@@ -3,9 +3,11 @@ require('dotenv').config();
 const express = require('express');
 const myDB = require('./connection');
 const fccTesting = require('./freeCodeCamp/fcctesting.js');
+const PORT = process.env.PORT || 3000;
 
 const session = require('express-session');
 const passport = require('passport');
+const { ObjectID } = require('mongodb');
 
 const app = express();
 
@@ -36,7 +38,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 /* End */
-const PORT = process.env.PORT || 3000;
+/* Serialization of a User Object */
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser((id, done) => {
+  myDataBase.findOne({ _id: new ObjectID(id) }, (err, doc) => {
+     done(null, doc);
+  });
+  done(null, null);
+});
+/* End */
 app.listen(PORT, () => {
   console.log('Listening on port ' + PORT);
 });
